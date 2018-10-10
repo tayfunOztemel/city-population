@@ -11,11 +11,13 @@ The goal is to grow a city based on life-events read from a Kafka queue. The lif
 `Travels`, `Accidents`
 
 ### Restrictions: 
+```
 Children can only happen after Adulthood and Partner. 
 Nothing can happen until Birth. 
 Nothing can happen after Death. 
 Death can happen at any moment. 
 Partner can only happen after Adulthood 
+```
 
 ### Sample Life-Events Queue: 
 ```
@@ -39,12 +41,12 @@ Children-1-3
 ## API
 
 The state of the city needs to be maintained and be able to be queried via an API. 
-
+```
 GET /inhabitant/:id   => Returns Events for a specific inhabitant. 
 GET /city             => Returns total population. 
 GET /city/adults      => Returns number of Adults. 
 GET /city/partners    => Returns number of Partner  
-
+```
 
 ### Tech Stack
 The application should be written with: 
