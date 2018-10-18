@@ -1,36 +1,39 @@
 package city;
 
 import akka.japi.function.Function;
-import city.events.Events;
+import city.events.Events.Adulthood;
+import city.events.Events.Birth;
+import city.events.Events.Death;
+import city.events.Events.Education;
 
 class Decorators {
-    // Decoration utilities
-    static Function<Citizen, Citizen> toBeDropped_IfDied() {
-        return c -> Events.Death.filter(c) ? new Citizen.Drop(c) : c;
+
+    static Function<Citizen, Citizen> toBeLogged_IfDied() {
+        return c -> Death.filter(c) ? new Citizen.Logged(c) : c;
     }
 
-    static Function<Citizen, Citizen> toBeDropped_IfBorn() {
-        return c -> Events.Birth.filter(c) ? new Citizen.Drop(c) : c;
+    static Function<Citizen, Citizen> toBeLogged_IfBorn() {
+        return c -> Birth.filter(c) ? new Citizen.Logged(c) : c;
     }
 
     static Function<Citizen, Citizen> toBeDropped_IfAdult() {
-        return c -> Events.Adulthood.filter(c) ? new Citizen.Drop(c) : c;
+        return c -> Adulthood.filter(c) ? new Citizen.Logged(c) : c;
     }
 
-    static Function<Citizen, Citizen> toBeDropped_IfEducated() {
-        return c -> Events.Education.filter(c) ? new Citizen.Drop(c) : c;
+    static Function<Citizen, Citizen> toBeLogged_IfEducated() {
+        return c -> Education.filter(c) ? new Citizen.Logged(c) : c;
     }
 
     static Function<Citizen, Citizen> toBeRequeued_IfUnbornYet() {
-        return c -> Events.Birth.filter(c) ? c : new Citizen.Requeue(c);
+        return c -> Birth.filter(c) ? c : new Citizen.Requeue(c);
     }
 
     static Function<Citizen, Citizen> toBeRequeued_IfNotAdultYet() {
-        return c -> Events.Adulthood.filter(c) ? c : new Citizen.Requeue(c);
+        return c -> Adulthood.filter(c) ? c : new Citizen.Requeue(c);
     }
 
-    static boolean dropOrRequeue(Citizen citizen) {
-        return (citizen instanceof Citizen.Drop) || (citizen instanceof Citizen.Requeue);
+    static boolean isLoggedOrRequeue(Citizen citizen) {
+        return (citizen instanceof Citizen.Logged) || (citizen instanceof Citizen.Requeue);
     }
 
 }

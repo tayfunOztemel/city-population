@@ -36,10 +36,10 @@ public class Citizen {
         }
     }
 
-    static class Drop extends Citizen {
+    static class Logged extends Citizen {
         private Citizen c;
 
-        Drop(Citizen c) {
+        Logged(Citizen c) {
             super(c);
             this.c = c;
         }

@@ -4,8 +4,8 @@ import akka.NotUsed;
 import akka.japi.Pair;
 import akka.stream.*;
 import akka.stream.javadsl.*;
-import city.Citizen.Drop;
-import city.events.Events;
+import city.Citizen.Logged;
+import city.events.Events.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +15,8 @@ import static city.Decorators.*;
 
 public class Graphs {
 
-    private static Graph<SinkShape<Citizen>, ?> sinkToLogAndIgnore = Flow.of(Citizen.class)
-            .filter(c -> c instanceof Drop)
+    private static Graph<SinkShape<Citizen>, ?> sinkToLog = Flow.of(Citizen.class)
+            .filter(c -> c instanceof Logged)
             .map(c -> c.rawMessage)
             .to(Sink.foreach(Graphs::logAndDrop));
 
@@ -25,50 +25,51 @@ public class Graphs {
             .map(c -> c.rawMessage)
             .to(Sink.foreach(Graphs::requeue));
 
-    private static final Flow<Citizen, Citizen, NotUsed> combinedSinkFlow = Flow.of(Citizen.class)
-            .alsoTo(sinkToKafka)
-            .alsoTo(sinkToLogAndIgnore)
-            .filterNot(Decorators::dropOrRequeue);
-
     public final static Sink<String, NotUsed> birthFlow = Flow.of(String.class)
             .map(Citizen::toCitizen)
-            .map(toBeDropped_IfBorn())
-            .map(toBeDropped_IfDied())
-            .alsoTo(sinkToLogAndIgnore)
-            .filterNot(Decorators::dropOrRequeue)
-            .to(Sink.foreach(Events.Birth::sink));
+            .map(toBeLogged_IfBorn())
+            .map(toBeLogged_IfDied())
+            .alsoTo(sinkToLog)
+            .filterNot(Decorators::isLoggedOrRequeue)
+            .to(Sink.foreach(Birth::sink));
 
     public final static Sink<String, NotUsed> deathFlow = Flow.of(String.class)
             .map(Citizen::toCitizen)
             .map(toBeRequeued_IfUnbornYet())
-            .map(toBeDropped_IfDied())
-            .via(combinedSinkFlow)
-            .to(Sink.foreach(Events.Death::sink));
+            .map(toBeLogged_IfDied())
+            .alsoTo(sinkToKafka)
+            .alsoTo(sinkToLog)
+            .filterNot(Decorators::isLoggedOrRequeue)
+            .to(Sink.foreach(Death::sink));
 
     public final static Sink<String, NotUsed> educationFlow = Flow.of(String.class)
             .map(Citizen::toCitizen)
             .map(toBeRequeued_IfUnbornYet())
-            .map(toBeDropped_IfDied())
-            .map(toBeDropped_IfEducated())
-            .via(combinedSinkFlow)
-            .to(Sink.foreach(Events.Education::sink));
+            .map(toBeLogged_IfDied())
+            .map(toBeLogged_IfEducated())
+            .alsoTo(sinkToKafka)
+            .alsoTo(sinkToLog)
+            .filterNot(Decorators::isLoggedOrRequeue)
+            .to(Sink.foreach(Education::sink));
 
     public final static Sink<String, NotUsed> adulthoodSink = Flow.of(String.class)
             .map(Citizen::toCitizen)
             .map(toBeRequeued_IfUnbornYet())
-            .map(toBeDropped_IfDied())
+            .map(toBeLogged_IfDied())
             .map(toBeDropped_IfAdult())
-            .via(combinedSinkFlow)
-            .to(Sink.foreach(Events.Adulthood::sink));
+            .alsoTo(sinkToKafka)
+            .alsoTo(sinkToLog)
+            .filterNot(Decorators::isLoggedOrRequeue)
+            .to(Sink.foreach(Adulthood::sink));
 
     // Parallel Processing
     private static final Sink<Partnership, NotUsed> sinkToPartnership = Flow.of(Partnership.class)
-            .filterNot(p -> dropOrRequeue(p.c1) || dropOrRequeue(p.c2))
-            .to(Sink.foreach(Events.Partner::sink));
+            .filterNot(p -> isLoggedOrRequeue(p.c1) || isLoggedOrRequeue(p.c2))
+            .to(Sink.foreach(Partner::sink));
 
 
-    private static final Sink<Partnership, NotUsed> sinkToLog = Flow.of(Partnership.class)
-            .filter(p -> (p.c1 instanceof Drop) || (p.c2 instanceof Drop))
+    private static final Sink<Partnership, NotUsed> sinkPartnersToLog = Flow.of(Partnership.class)
+            .filter(p -> (p.c1 instanceof Logged) || (p.c2 instanceof Logged))
             .map(p -> p.rawMessage)
             .to(Sink.foreach(Graphs::logAndDrop));
 
@@ -77,7 +78,7 @@ public class Graphs {
             .map(p -> p.rawMessage)
             .to(Sink.foreach(Graphs::requeue));
 
-    static List<Sink<Partnership, NotUsed>> list = Arrays.asList(sinkToRequeu, sinkToLog, sinkToPartnership);
+    static List<Sink<Partnership, NotUsed>> list = Arrays.asList(sinkToRequeu, sinkPartnersToLog, sinkToPartnership);
 
     private static Sink partnerCombinedSink =
             Sink.fromGraph(GraphDSL.create(
@@ -102,11 +103,11 @@ public class Graphs {
 
                         final FlowShape<Citizen, Citizen> adultValidationFlow = builder.add(Flow.of(Citizen.class)
                                 .map(toBeRequeued_IfUnbornYet())
-                                .map(toBeDropped_IfDied())
+                                .map(toBeLogged_IfDied())
                                 .map(toBeRequeued_IfNotAdultYet()));
                         final FlowShape<Citizen, Citizen> adultValidationFlow2 = builder.add(Flow.of(Citizen.class)
                                 .map(toBeRequeued_IfUnbornYet())
-                                .map(toBeDropped_IfDied())
+                                .map(toBeLogged_IfDied())
                                 .map(toBeRequeued_IfNotAdultYet()));
 
                         builder.from(inlet)
@@ -124,8 +125,8 @@ public class Graphs {
     public final static Sink<String, NotUsed> logged = Flow.of(String.class)
             .map(Citizen::toCitizen)
             .map(toBeRequeued_IfUnbornYet())
-            .map(toBeDropped_IfDied())
-            .to(sinkToLogAndIgnore);
+            .map(toBeLogged_IfDied())
+            .to(sinkToLog);
 
     private static void requeue(String rawMessage) {
         System.out.println("Requeue:" + rawMessage);
