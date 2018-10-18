@@ -6,12 +6,10 @@ import akka.japi.function.Function;
 import akka.stream.*;
 import akka.stream.javadsl.*;
 import city.Citizen.Drop;
+import city.events.Events;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static city.Citizen.Requeue;
 
@@ -38,14 +36,14 @@ public class Graphs {
             .map(toBeDropped_IfDied())
             .alsoTo(sinkToLogAndIgnore)
             .filterNot(Graphs::dropOrRequeue)
-            .to(Sink.foreach(Birth::sink));
+            .to(Sink.foreach(Events.Birth::sink));
 
     public final static Sink<String, NotUsed> deathFlow = Flow.of(String.class)
             .map(Citizen::toCitizen)
             .map(toBeRequeued_IfUnbornYet())
             .map(toBeDropped_IfDied())
             .via(combinedSinkFlow)
-            .to(Sink.foreach(Death::sink));
+            .to(Sink.foreach(Events.Death::sink));
 
     public final static Sink<String, NotUsed> educationFlow = Flow.of(String.class)
             .map(Citizen::toCitizen)
@@ -53,7 +51,7 @@ public class Graphs {
             .map(toBeDropped_IfDied())
             .map(toBeDropped_IfEducated())
             .via(combinedSinkFlow)
-            .to(Sink.foreach(Education::sink));
+            .to(Sink.foreach(Events.Education::sink));
 
     public final static Sink<String, NotUsed> adulthoodSink = Flow.of(String.class)
             .map(Citizen::toCitizen)
@@ -61,12 +59,12 @@ public class Graphs {
             .map(toBeDropped_IfDied())
             .map(toBeDropped_IfAdult())
             .via(combinedSinkFlow)
-            .to(Sink.foreach(Adulthood::sink));
+            .to(Sink.foreach(Events.Adulthood::sink));
 
     // Parallel Processing
     private static final Sink<Partnership, NotUsed> sinkToPartnership = Flow.of(Partnership.class)
             .filterNot(p -> dropOrRequeue(p.c1) || dropOrRequeue(p.c2))
-            .to(Sink.foreach(Partner::sink));
+            .to(Sink.foreach(Events.Partner::sink));
 
 
     private static final Sink<Partnership, NotUsed> sinkToLog = Flow.of(Partnership.class)
@@ -140,115 +138,31 @@ public class Graphs {
 
     // Decoration utilities
     private static Function<Citizen, Citizen> toBeDropped_IfDied() {
-        return c -> Death.filter(c) ? new Drop(c) : c;
+        return c -> Events.Death.filter(c) ? new Drop(c) : c;
     }
 
     private static Function<Citizen, Citizen> toBeDropped_IfBorn() {
-        return c -> Birth.filter(c) ? new Drop(c) : c;
+        return c -> Events.Birth.filter(c) ? new Drop(c) : c;
     }
 
     private static Function<Citizen, Citizen> toBeDropped_IfAdult() {
-        return c -> Adulthood.filter(c) ? new Drop(c) : c;
+        return c -> Events.Adulthood.filter(c) ? new Drop(c) : c;
     }
 
     private static Function<Citizen, Citizen> toBeDropped_IfEducated() {
-        return c -> Education.filter(c) ? new Drop(c) : c;
+        return c -> Events.Education.filter(c) ? new Drop(c) : c;
     }
 
     private static Function<Citizen, Citizen> toBeRequeued_IfUnbornYet() {
-        return c -> Birth.filter(c) ? c : new Requeue(c);
+        return c -> Events.Birth.filter(c) ? c : new Requeue(c);
     }
 
     private static Function<Citizen, Citizen> toBeRequeued_IfNotAdultYet() {
-        return c -> Adulthood.filter(c) ? c : new Requeue(c);
+        return c -> Events.Adulthood.filter(c) ? c : new Requeue(c);
     }
 
     private static boolean dropOrRequeue(Citizen citizen) {
         return (citizen instanceof Drop) || (citizen instanceof Requeue);
-    }
-
-    static class Birth {
-        private final static Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        static Citizen sink(Citizen c) {
-            set.add(c.name);
-            System.out.println("SINK:"+c.rawMessage);
-            return c;
-        }
-
-        static boolean filter(Citizen citizen) {
-            return set.contains(citizen.name);
-        }
-    }
-
-    static class Adulthood {
-        private final static Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        static Citizen sink(Citizen c) {
-            set.add(c.name);
-            System.out.println("SINK:"+c.rawMessage);
-            return c;
-        }
-
-        static boolean filter(Citizen citizen) {
-            return set.contains(citizen.name);
-        }
-
-    }
-
-    static class Partner {
-        private final static Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        static Partnership sink(Partnership partnership) {
-            set.add(partnership.rawMessage);
-            System.out.println("SINK:"+partnership.rawMessage);
-
-            return partnership;
-        }
-
-        public static boolean filter(Partnership partnership) {
-            return set.contains(partnership.rawMessage);
-        }
-    }
-
-    static class Children {
-        private final static Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        static Citizen sink(Citizen citizen) {
-            set.add(citizen.rawMessage);
-            return citizen;
-        }
-
-        public static boolean filter(Citizen citizen) {
-            return true;
-        }
-    }
-
-    static class Education {
-        private final static Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        static Citizen sink(Citizen c) {
-            set.add(c.name);
-            System.out.println("SINK:"+c.rawMessage);
-            return c;
-        }
-
-        static boolean filter(Citizen c) {
-            return set.contains(c.name);
-        }
-    }
-
-    static class Death {
-        private static Set<String> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-        static boolean filter(Citizen citizen) {
-            return set.contains(citizen.name);
-        }
-
-        static void sink(Citizen citizen) {
-            set.add(citizen.name);
-            System.out.println("SINK:"+citizen.rawMessage);
-        }
     }
 
     // Graph factories

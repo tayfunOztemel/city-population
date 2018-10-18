@@ -2,9 +2,9 @@ package city;
 
 public class Citizen {
 
-    final String name;
+    final public String name;
     final String event;
-    final String rawMessage;
+    final public String rawMessage;
 
     private Citizen(String rawMessage, String name, String event) {
         this.rawMessage = rawMessage;

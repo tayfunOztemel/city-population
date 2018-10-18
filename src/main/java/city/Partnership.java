@@ -1,10 +1,10 @@
 package city;
 
-class Partnership {
+public class Partnership {
 
     final Citizen c1;
     final Citizen c2;
-    final String rawMessage;
+    final public String rawMessage;
 
     private Partnership(Citizen c1, Citizen c2) {
         this.c1 = c1;

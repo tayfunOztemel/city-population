@@ -1,13 +1,11 @@
 import akka.actor.ActorSystem;
 import akka.kafka.ConsumerMessage;
-import akka.kafka.ProducerSettings;
 import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Sink;
 import city.Citizen;
 import city.Graphs;
 import kafka.CityEventConsumer;
 import kafka.CityEventProducer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,10 +21,6 @@ public class Main {
         final CityEventProducer cityEventProducer = CityEventProducer.getInstance(system);
 
         final CityEventConsumer cityEventConsumer = CityEventConsumer.getInstance(system);
-
-        final KafkaProducer kafkaProducer = cityEventProducer.getKafkaProducer();
-        final ProducerSettings<String, String> kafkaProducerSettings = cityEventProducer.getProducerSettings();
-
 
         cityEventConsumer.source()
                 .filter(Main::checkFormat)
