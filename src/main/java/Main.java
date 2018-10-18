@@ -28,12 +28,12 @@ public class Main {
                 .map(msg -> msg.record().value())
                 .divertTo(Graphs.birthFlow, c -> c.startsWith("Birth"))
                 .divertTo(Graphs.deathFlow, c -> c.startsWith("Death"))
-                .divertTo(Graphs.adulthoodSink, c -> c.startsWith("Adulthood"))
-                .divertTo(Graphs.partnerSinkGraph, c -> c.startsWith("Partner"))
+                .divertTo(Graphs.adulthoodFlow, c -> c.startsWith("Adulthood"))
+                .divertTo(Graphs.partnerFlow, c -> c.startsWith("Partner"))
 //                .divertTo(Graphs.children, c -> c.startsWith("Children"))
                 .divertTo(Graphs.educationFlow, c -> c.startsWith("Education"))
-                .divertTo(Graphs.logged, Main::ignored)
-                .to(Sink.foreach(c -> System.out.println("Unknown event:" + c)))
+                .divertTo(Graphs.ignoredEventFlow, Main::ignored)
+                .to(Sink.ignore())
                 .run(materializer);
     }
 
