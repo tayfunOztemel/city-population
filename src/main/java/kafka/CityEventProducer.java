@@ -1,3 +1,5 @@
+package kafka;
+
 import akka.actor.ActorSystem;
 import akka.kafka.ProducerSettings;
 import akka.kafka.javadsl.Producer;
@@ -6,13 +8,10 @@ import akka.stream.javadsl.Source;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.Metric;
-import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
 
 public class CityEventProducer {
 
@@ -41,10 +40,6 @@ public class CityEventProducer {
         return producerSettings;
     }
 
-    public Map<MetricName, ? extends Metric> getMetrics() {
-        return kafkaProducer.metrics();
-    }
-
     private static ProducerSettings<String, String> createSettings(ActorSystem system) {
         final Config config = system.settings().config().getConfig("akka.kafka.producer");
         return ProducerSettings.create(config, new StringSerializer(), new StringSerializer())
@@ -53,7 +48,7 @@ public class CityEventProducer {
 
     void test(ActorMaterializer materializer) {
         Source
-                .from(Arrays.asList("CityEventProducer says", "echo", "echo", "echo"))
+                .from(Arrays.asList("kafka.CityEventProducer says", "echo", "echo", "echo"))
                 .throttle(1, Duration.ofSeconds(1))
                 .map(value -> new ProducerRecord<String, String>(KafkaTopic.CITY_POPULATION_TOPIC_NAME, value))
                 .runWith(Producer.plainSink(producerSettings, kafkaProducer), materializer);

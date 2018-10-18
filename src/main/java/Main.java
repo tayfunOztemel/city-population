@@ -5,6 +5,8 @@ import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Sink;
 import city.Citizen;
 import city.Graphs;
+import kafka.CityEventConsumer;
+import kafka.CityEventProducer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 
 import java.util.Map;

@@ -1,17 +1,16 @@
-import akka.actor.ActorRef;
+package kafka;
+
 import akka.actor.ActorSystem;
 import akka.kafka.*;
 import akka.kafka.javadsl.Consumer;
 import akka.kafka.javadsl.Producer;
 import akka.stream.ActorMaterializer;
-import akka.stream.Graph;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Map;
@@ -45,7 +44,7 @@ public class CityEventConsumer {
         return instance;
     }
 
-    Source<ConsumerMessage.CommittableMessage<String, String>, Consumer.Control> source() {
+    public Source<ConsumerMessage.CommittableMessage<String, String>, Consumer.Control> source() {
         return cityPopulationSource;
     }
 
@@ -64,17 +63,6 @@ public class CityEventConsumer {
 //                        .mapAsync(1, offset -> offset.commitJavadsl())
                         .to(Sink.ignore())
                         .run(materializer);
-    }
-
-    void sharingKafkaConsumerInstance(ActorRef consumer, ActorMaterializer materializer) {
-        Consumer.plainExternalSource(consumer, Subscriptions.assignment(new TopicPartition(KafkaTopic.CITY_POPULATION_TOPIC_NAME, 2)))
-                .via(business2())
-                .to(Sink.ignore())
-                .run(materializer);
-    }
-
-    private Graph business2() {
-        return null;
     }
 
     private CompletionStage<String> business(ConsumerMessage.CommittableMessage<String, String> msg) {
