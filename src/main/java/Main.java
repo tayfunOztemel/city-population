@@ -28,20 +28,20 @@ public class Main {
 
         cityEventConsumer.source()
                 .filter(Main::checkFormat)
-                .map(Citizen::toCitizen)
-                .divertTo(Graphs.birth, c -> c.rawMessage.startsWith("Birth"))
-                .divertTo(Graphs.death, c -> c.rawMessage.startsWith("Death"))
-                .divertTo(Graphs.adulthood, c -> c.rawMessage.startsWith("Adulthood"))
-                .divertTo(Graphs.partner, c -> c.rawMessage.startsWith("Partner"))
-                .divertTo(Graphs.children, c -> c.rawMessage.startsWith("Children"))
-                .divertTo(Graphs.education, c -> c.rawMessage.startsWith("Education"))
+                .filter(msg -> msg.record() != null) // TODO delete this
+                .map(msg -> msg.record().value())
+                .divertTo(Graphs.birthFlow, c -> c.startsWith("Birth"))
+                .divertTo(Graphs.deathFlow, c -> c.startsWith("Death"))
+                .divertTo(Graphs.adulthoodSink, c -> c.startsWith("Adulthood"))
+                .divertTo(Graphs.partnerSinkGraph, c -> c.startsWith("Partner"))
+//                .divertTo(Graphs.children, c -> c.startsWith("Children"))
+                .divertTo(Graphs.educationFlow, c -> c.startsWith("Education"))
                 .divertTo(Graphs.logged, Main::ignored)
-                .to(Sink.foreach(c -> System.out.println("Unknown event:" + c.rawMessage)))
+                .to(Sink.foreach(c -> System.out.println("Unknown event:" + c)))
                 .run(materializer);
     }
 
-    private static boolean ignored(Citizen c) {
-        final String rawMessage = c.rawMessage;
+    private static boolean ignored(String rawMessage) {
         return rawMessage.startsWith("Travels") || rawMessage.startsWith("Accidents");
     }
 

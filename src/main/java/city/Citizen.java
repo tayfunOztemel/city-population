@@ -1,12 +1,16 @@
 package city;
 
-import akka.kafka.ConsumerMessage;
-
 public class Citizen {
 
     public final String name;
     public final String event;
     public final String rawMessage;
+
+    private Citizen(String rawMessage, String name, String event) {
+        this.rawMessage = rawMessage;
+        this.name = name;
+        this.event = event;
+    }
 
     protected Citizen(Citizen c) {
         name = c.name;
@@ -14,15 +18,13 @@ public class Citizen {
         rawMessage = c.rawMessage;
     }
 
-    public Citizen(String string) {
-        String[] split = string.split("-");
-        name = split[1];
-        event = split[0];
-        rawMessage = string;
+    public static Citizen toCitizen(String rawMessage, String name) {
+        return new Citizen(rawMessage, name, rawMessage.split("-")[0]);
     }
 
-    public static Citizen toCitizen(ConsumerMessage.CommittableMessage<String, String> msg) {
-        return new Citizen(msg.record().value());
+    public static Citizen toCitizen(String rawMessage) {
+        String[] split = rawMessage.split("-");
+        return new Citizen(rawMessage, split[1], split[0]);
     }
 
     public static class Requeue extends Citizen {
@@ -58,8 +60,8 @@ public class Citizen {
         public Partnership(String rawMessage) {
             this.rawMessage = rawMessage;
             final String[] split = rawMessage.split("-");
-            c1 = new Citizen(split[0] + "-" + split[1]);
-            c2 = new Citizen(split[0] + "-" + split[2]);
+            c1 = Citizen.toCitizen(rawMessage, split[1]);
+            c2 = Citizen.toCitizen(rawMessage, split[2]);
         }
 
         public static Partnership of(Citizen c1, Citizen c2) {
