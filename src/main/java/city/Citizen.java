@@ -12,7 +12,7 @@ public class Citizen {
         this.event = event;
     }
 
-    protected Citizen(Citizen c) {
+    Citizen(Citizen c) {
         name = c.name;
         event = c.event;
         rawMessage = c.rawMessage;
