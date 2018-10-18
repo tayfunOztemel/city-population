@@ -6,7 +6,6 @@ import akka.japi.function.Function;
 import akka.stream.*;
 import akka.stream.javadsl.*;
 import city.Citizen.Drop;
-import city.Citizen.Partnership;
 
 import java.util.Arrays;
 import java.util.Collections;
