@@ -2,7 +2,6 @@ package city;
 
 import akka.NotUsed;
 import akka.japi.Pair;
-import akka.japi.function.Function;
 import akka.stream.*;
 import akka.stream.javadsl.*;
 import city.Citizen.Drop;
@@ -12,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static city.Citizen.Requeue;
+import static city.Decorators.*;
 
 public class Graphs {
 
@@ -28,14 +28,14 @@ public class Graphs {
     private static final Flow<Citizen, Citizen, NotUsed> combinedSinkFlow = Flow.of(Citizen.class)
             .alsoTo(sinkToKafka)
             .alsoTo(sinkToLogAndIgnore)
-            .filterNot(Graphs::dropOrRequeue);
+            .filterNot(Decorators::dropOrRequeue);
 
     public final static Sink<String, NotUsed> birthFlow = Flow.of(String.class)
             .map(Citizen::toCitizen)
             .map(toBeDropped_IfBorn())
             .map(toBeDropped_IfDied())
             .alsoTo(sinkToLogAndIgnore)
-            .filterNot(Graphs::dropOrRequeue)
+            .filterNot(Decorators::dropOrRequeue)
             .to(Sink.foreach(Events.Birth::sink));
 
     public final static Sink<String, NotUsed> deathFlow = Flow.of(String.class)
@@ -134,35 +134,6 @@ public class Graphs {
     private static void logAndDrop(String rawMessage) {
         System.out.println("Dropped: " + rawMessage);
 
-    }
-
-    // Decoration utilities
-    private static Function<Citizen, Citizen> toBeDropped_IfDied() {
-        return c -> Events.Death.filter(c) ? new Drop(c) : c;
-    }
-
-    private static Function<Citizen, Citizen> toBeDropped_IfBorn() {
-        return c -> Events.Birth.filter(c) ? new Drop(c) : c;
-    }
-
-    private static Function<Citizen, Citizen> toBeDropped_IfAdult() {
-        return c -> Events.Adulthood.filter(c) ? new Drop(c) : c;
-    }
-
-    private static Function<Citizen, Citizen> toBeDropped_IfEducated() {
-        return c -> Events.Education.filter(c) ? new Drop(c) : c;
-    }
-
-    private static Function<Citizen, Citizen> toBeRequeued_IfUnbornYet() {
-        return c -> Events.Birth.filter(c) ? c : new Requeue(c);
-    }
-
-    private static Function<Citizen, Citizen> toBeRequeued_IfNotAdultYet() {
-        return c -> Events.Adulthood.filter(c) ? c : new Requeue(c);
-    }
-
-    private static boolean dropOrRequeue(Citizen citizen) {
-        return (citizen instanceof Drop) || (citizen instanceof Requeue);
     }
 
     // Graph factories
