@@ -6,7 +6,7 @@ import city.events.Event.*;
 
 public final class EventHandler {
 
-    static final CitizenEventMap map = new CitizenEventMap();
+    private static final CitizenEventMap map = new CitizenEventMap();
 
     private EventHandler() {
     }
@@ -60,7 +60,6 @@ public final class EventHandler {
             map.put(partnership.c2, new Children(partnership.c1));
             System.out.println("SINK:" + partnership.rawMessage);
         }
-
     }
 
     public static class DeathHandler {
@@ -79,10 +78,6 @@ public final class EventHandler {
         public static void sink(Citizen citizen) {
             map.put(citizen, new Education());
             System.out.println("SINK:" + citizen.rawMessage);
-        }
-
-        public static boolean filter(Citizen c) {
-            return map.contains(c, new Education());
         }
     }
 

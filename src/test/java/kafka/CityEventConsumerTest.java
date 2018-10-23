@@ -45,7 +45,7 @@ public class CityEventConsumerTest {
         final ActorSystem system = ActorSystem.create("city-population");
 
         Consumer.Control control =
-                CityEventConsumer.getInstance(system).source()
+                CityEventConsumer.getInstance().source()
                         .map(elem -> {
                             System.out.println("print Element:" + elem);
                             return elem;

@@ -4,27 +4,24 @@ public class Citizen {
 
     final public String name;
     final public String rawMessage;
-    final String event;
 
-    private Citizen(String rawMessage, String event, String name) {
+    private Citizen(String rawMessage, String name) {
         this.rawMessage = rawMessage;
         this.name = name;
-        this.event = event;
     }
 
     Citizen(Citizen c) {
         name = c.name;
-        event = c.event;
         rawMessage = c.rawMessage;
     }
 
     static Citizen toCitizen(String rawMessage, String name) {
-        return new Citizen(rawMessage, rawMessage.split("-")[0], name);
+        return new Citizen(rawMessage, name);
     }
 
     static Citizen toCitizen(String rawMessage) {
         String[] split = rawMessage.split("-");
-        return new Citizen(rawMessage, split[0], split[1]);
+        return new Citizen(rawMessage, split[1]);
     }
 
     @Override

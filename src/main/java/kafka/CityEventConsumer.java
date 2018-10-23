@@ -15,12 +15,10 @@ public class CityEventConsumer {
 
     private static CityEventConsumer instance;
 
-    private final ConsumerSettings<String, String> consumerSettings;
     private final Source<ConsumerMessage.CommittableMessage<String, String>, Consumer.Control> cityPopulationSource;
 
     private CityEventConsumer(ActorSystem system) {
-        consumerSettings = createConsumerSettings(system);
-        cityPopulationSource = Consumer.committableSource(consumerSettings, getTopics());
+        cityPopulationSource = Consumer.committableSource(consumerSettings(system), getTopics());
     }
 
     public static void initialize(ActorSystem system) {
@@ -33,7 +31,7 @@ public class CityEventConsumer {
         return instance;
     }
 
-    private static ConsumerSettings<String, String> createConsumerSettings(ActorSystem system) {
+    private static ConsumerSettings<String, String> consumerSettings(ActorSystem system) {
         final Config config = system.settings().config().getConfig("akka.kafka.consumer");
         return ConsumerSettings.create(config, new StringDeserializer(), new StringDeserializer())
                 .withBootstrapServers("localhost:9092")
