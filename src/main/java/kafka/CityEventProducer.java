@@ -1,17 +1,14 @@
 package kafka;
 
+import akka.NotUsed;
 import akka.actor.ActorSystem;
 import akka.kafka.ProducerSettings;
 import akka.kafka.javadsl.Producer;
-import akka.stream.ActorMaterializer;
-import akka.stream.javadsl.Source;
+import akka.stream.javadsl.Sink;
 import com.typesafe.config.Config;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-
-import java.time.Duration;
-import java.util.Arrays;
 
 public class CityEventProducer {
 
@@ -25,19 +22,14 @@ public class CityEventProducer {
         kafkaProducer = producerSettings.createKafkaProducer();
     }
 
-    public static CityEventProducer getInstance(ActorSystem system) {
+    public static void initialize(ActorSystem system) {
         if (instance == null) {
             instance = new CityEventProducer(createSettings(system));
         }
+    }
+
+    public static CityEventProducer getInstance() {
         return instance;
-    }
-
-    public KafkaProducer getKafkaProducer() {
-        return kafkaProducer;
-    }
-
-    public ProducerSettings<String, String> getProducerSettings() {
-        return producerSettings;
     }
 
     private static ProducerSettings<String, String> createSettings(ActorSystem system) {
@@ -46,12 +38,12 @@ public class CityEventProducer {
                 .withBootstrapServers("localhost:9092");
     }
 
-    void test(ActorMaterializer materializer) {
-        Source
-                .from(Arrays.asList("kafka.CityEventProducer says", "echo", "echo", "echo"))
-                .throttle(1, Duration.ofSeconds(1))
-                .map(value -> new ProducerRecord<String, String>(KafkaTopic.CITY_POPULATION_TOPIC_NAME, value))
-                .runWith(Producer.plainSink(producerSettings, kafkaProducer), materializer);
+    public static ProducerRecord<String, String> toRecord(String rawMessage) {
+        return new ProducerRecord<String, String>(KafkaTopic.CITY_POPULATION_TOPIC_NAME, rawMessage);
+    }
+
+    public Sink<ProducerRecord<String, String>, NotUsed> sink() {
+        return Producer.plainSink(producerSettings, kafkaProducer);
     }
 
 }

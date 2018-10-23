@@ -7,6 +7,7 @@ import city.Graphs;
 import kafka.CityEventConsumer;
 import kafka.CityEventProducer;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,19 +19,20 @@ public class Main {
         final ActorSystem system = ActorSystem.create("city-population");
         final ActorMaterializer materializer = ActorMaterializer.create(system);
 
-        final CityEventProducer cityEventProducer = CityEventProducer.getInstance(system);
+        CityEventProducer.initialize(system);
+        CityEventConsumer.initialize(system);
 
-        final CityEventConsumer cityEventConsumer = CityEventConsumer.getInstance(system);
+        final CityEventConsumer cityEventConsumer = CityEventConsumer.getInstance();
 
         cityEventConsumer.source()
-                .filter(Main::checkFormat)
-                .filter(msg -> msg.record() != null) // TODO delete this
+                .throttle(1, Duration.ofSeconds(1))
+                .filter(Main::formatCheck)
                 .map(msg -> msg.record().value())
                 .divertTo(Graphs.birthFlow, c -> c.startsWith("Birth"))
                 .divertTo(Graphs.deathFlow, c -> c.startsWith("Death"))
                 .divertTo(Graphs.adulthoodFlow, c -> c.startsWith("Adulthood"))
                 .divertTo(Graphs.partnerFlow, c -> c.startsWith("Partner"))
-//                .divertTo(Graphs.children, c -> c.startsWith("Children"))
+                .divertTo(Graphs.childrenFlow, c -> c.startsWith("Children"))
                 .divertTo(Graphs.educationFlow, c -> c.startsWith("Education"))
                 .divertTo(Graphs.ignoredEventFlow, Main::ignored)
                 .to(Sink.ignore())
@@ -41,7 +43,7 @@ public class Main {
         return rawMessage.startsWith("Travels") || rawMessage.startsWith("Accidents");
     }
 
-    private static boolean checkFormat(ConsumerMessage.CommittableMessage<String, String> msg) {
+    private static boolean formatCheck(ConsumerMessage.CommittableMessage<String, String> msg) {
         final String value = msg.record().value();
         return !value.isEmpty() && value.contains("-");
     }

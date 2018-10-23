@@ -1,12 +1,14 @@
 package city;
 
+import akka.japi.function.Predicate;
+
 public class Citizen {
 
     final public String name;
-    final String event;
     final public String rawMessage;
+    final String event;
 
-    private Citizen(String rawMessage, String name, String event) {
+    private Citizen(String rawMessage, String event, String name) {
         this.rawMessage = rawMessage;
         this.name = name;
         this.event = event;
@@ -19,12 +21,26 @@ public class Citizen {
     }
 
     static Citizen toCitizen(String rawMessage, String name) {
-        return new Citizen(rawMessage, name, rawMessage.split("-")[0]);
+        return new Citizen(rawMessage, rawMessage.split("-")[0], name);
     }
 
-    static Citizen toCitizen(String rawMessage) {
+    public static Citizen toCitizen(String rawMessage) {
         String[] split = rawMessage.split("-");
-        return new Citizen(rawMessage, split[1], split[0]);
+        return new Citizen(rawMessage, split[0], split[1]);
+    }
+
+    static Predicate<Citizen> ifCitizenNeedsRequeue() {
+        return c -> c instanceof Citizen.Requeue;
+    }
+
+    static Predicate<Citizen> ifCitizenNeedsLogging() {
+        return c -> c instanceof Citizen.Logged;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Citizen
+                && ((Citizen) obj).name.equals(name);
     }
 
     static class Requeue extends Citizen {

@@ -58,3 +58,9 @@ The application should be written with:
 The final api is described in OpenAPI specifications (a.k.a. Swagger file). 
 
 #Test
+=======
+### Delete Messages in Kafka
+```$xslt
+kafka-topics --zookeeper localhost:2181 --delete --topic city-population
+
+```
