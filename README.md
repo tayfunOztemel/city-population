@@ -56,11 +56,3 @@ The application should be written with:
 - Free to use any kind of storage that suits your needs (e.g. in memory, neo4j, akka)
 
 The final api is described in OpenAPI specifications (a.k.a. Swagger file). 
-
-#Test
-=======
-### Delete Messages in Kafka
-```$xslt
-kafka-topics --zookeeper localhost:2181 --delete --topic city-population
-
-```
