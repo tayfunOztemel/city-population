@@ -3,7 +3,7 @@ import akka.kafka.ConsumerMessage;
 import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Sink;
 import city.Citizen;
-import city.Graphs;
+import city.Flows;
 import kafka.CityEventConsumer;
 import kafka.CityEventProducer;
 
@@ -28,13 +28,13 @@ public class Main {
                 .throttle(1, Duration.ofSeconds(1))
                 .filter(Main::formatCheck)
                 .map(msg -> msg.record().value())
-                .divertTo(Graphs.birthFlow, c -> c.startsWith("Birth"))
-                .divertTo(Graphs.deathFlow, c -> c.startsWith("Death"))
-                .divertTo(Graphs.adulthoodFlow, c -> c.startsWith("Adulthood"))
-                .divertTo(Graphs.partnerFlow, c -> c.startsWith("Partner"))
-                .divertTo(Graphs.childrenFlow, c -> c.startsWith("Children"))
-                .divertTo(Graphs.educationFlow, c -> c.startsWith("Education"))
-                .divertTo(Graphs.ignoredEventFlow, Main::ignored)
+                .divertTo(Flows.birthFlow, c -> c.startsWith("Birth"))
+                .divertTo(Flows.deathFlow, c -> c.startsWith("Death"))
+                .divertTo(Flows.adulthoodFlow, c -> c.startsWith("Adulthood"))
+                .divertTo(Flows.partnerFlow, c -> c.startsWith("Partner"))
+                .divertTo(Flows.childrenFlow, c -> c.startsWith("Children"))
+                .divertTo(Flows.educationFlow, c -> c.startsWith("Education"))
+                .divertTo(Flows.ignoredEventFlow, Main::ignored)
                 .to(Sink.ignore())
                 .run(materializer);
     }

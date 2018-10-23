@@ -1,7 +1,5 @@
 package city;
 
-import akka.japi.function.Predicate;
-
 public class Citizen {
 
     final public String name;
@@ -24,17 +22,9 @@ public class Citizen {
         return new Citizen(rawMessage, rawMessage.split("-")[0], name);
     }
 
-    public static Citizen toCitizen(String rawMessage) {
+    static Citizen toCitizen(String rawMessage) {
         String[] split = rawMessage.split("-");
         return new Citizen(rawMessage, split[0], split[1]);
-    }
-
-    static Predicate<Citizen> ifCitizenNeedsRequeue() {
-        return c -> c instanceof Citizen.Requeue;
-    }
-
-    static Predicate<Citizen> ifCitizenNeedsLogging() {
-        return c -> c instanceof Citizen.Logged;
     }
 
     @Override
