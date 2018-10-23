@@ -10,11 +10,6 @@ public class Citizen {
         this.name = name;
     }
 
-    Citizen(Citizen c) {
-        name = c.name;
-        rawMessage = c.rawMessage;
-    }
-
     static Citizen toCitizen(String rawMessage, String name) {
         return new Citizen(rawMessage, name);
     }
@@ -28,24 +23,6 @@ public class Citizen {
     public boolean equals(Object obj) {
         return obj instanceof Citizen
                 && ((Citizen) obj).name.equals(name);
-    }
-
-    static class Requeue extends Citizen {
-        private Citizen c;
-
-        Requeue(Citizen c) {
-            super(c);
-            this.c = c;
-        }
-    }
-
-    static class Logged extends Citizen {
-        private Citizen c;
-
-        Logged(Citizen c) {
-            super(c);
-            this.c = c;
-        }
     }
 
 }
