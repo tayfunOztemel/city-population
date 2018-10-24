@@ -16,6 +16,10 @@ class FlowPredicates {
         return DeathHandler::filter;
     }
 
+    static Predicate<Citizen> ifCitizenAdultAlready() {
+        return AdulthoodHandler::filter;
+    }
+
     static Predicate<Partnership> ifPartnersUnbornYet() {
         return p -> !(BirthHandler.filter(p.c1) && BirthHandler.filter(p.c2));
     }

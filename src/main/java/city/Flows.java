@@ -30,6 +30,7 @@ public class Flows {
             .map(Citizen::toCitizen)
             .divertTo(Sinks.sinkEventToKafka, ifCitizenNotBornYet())
             .divertTo(Sinks.sinkEventToLog, ifCitizenDied())
+            .divertTo(Sinks.sinkEventToLog, ifCitizenAdultAlready())
             .to(Sink.foreach(AdulthoodHandler::sink));
 
     public final static Sink<String, NotUsed> partnerFlow = Flow.of(String.class)

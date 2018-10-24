@@ -1,3 +1,4 @@
+import city.events.EventHandler
 import com.twitter.conversions.string
 import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.http.{Request, Response}
@@ -16,15 +17,18 @@ object CityPopulation extends App {
   }
 
   private val city: Endpoint[String] = get("city") {
-    Ok("100")
+    val count = EventHandler.inhabitants()
+    Ok(s"$count")
   }
 
   private val adults: Endpoint[String] = get("city" :: "adults") {
-    Ok("10")
+    val count = EventHandler.adults()
+    Ok(s"$count")
   }
 
   private val partners: Endpoint[String] = get("city" :: "partners") {
-    Ok("10")
+    val count = EventHandler.partners()
+    Ok(s"$count")
   }
 
   val api: Service[Request, Response] =

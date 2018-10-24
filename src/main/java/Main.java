@@ -37,6 +37,10 @@ public class Main {
                 .divertTo(Flows.ignoredEventFlow, Main::ignored)
                 .to(Sink.ignore())
                 .run(materializer);
+
+        CityPopulation.main(new String[]{"Started"});
+
+        System.out.println("started");
     }
 
     private static boolean ignored(String rawMessage) {

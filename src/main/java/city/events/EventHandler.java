@@ -3,9 +3,14 @@ package city.events;
 import city.Citizen;
 import city.Partnership;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public final class EventHandler {
 
     private static final CitizenEventMap map = new CitizenEventMap();
+    private static final AtomicInteger inhabitants = new AtomicInteger(0);
+    private static final AtomicInteger adults = new AtomicInteger(0);
+    private static final AtomicInteger partners = new AtomicInteger(0);
 
     private EventHandler() {
     }
@@ -14,8 +19,8 @@ public final class EventHandler {
 
         public static void sink(Citizen citizen) {
             map.put(citizen, Event.BIRTH);
+            inhabitants.incrementAndGet();
             System.out.println("SINK:" + citizen.rawMessage);
-
         }
 
         public static boolean filter(Citizen citizen) {
@@ -27,6 +32,7 @@ public final class EventHandler {
 
         public static void sink(Citizen citizen) {
             map.put(citizen, Event.ADULTHOOD);
+            adults.incrementAndGet();
             System.out.println("SINK:" + citizen.rawMessage);
         }
 
@@ -41,6 +47,7 @@ public final class EventHandler {
         public static void sink(Partnership partnership) {
             map.put(partnership.c1, partnership.c2.name);
             map.put(partnership.c2, partnership.c1.name);
+            partners.incrementAndGet();
             System.out.println("SINK:" + partnership.rawMessage);
         }
 
@@ -68,6 +75,7 @@ public final class EventHandler {
 
         public static void sink(Citizen citizen) {
             map.put(citizen, Event.DEATH);
+            inhabitants.decrementAndGet();
             System.out.println("SINK:" + citizen.rawMessage);
         }
     }
@@ -79,4 +87,15 @@ public final class EventHandler {
         }
     }
 
+    public static int inhabitants(){
+        return inhabitants.get();
+    }
+
+    public static int adults(){
+        return adults.get();
+    }
+
+    public static int partners(){
+        return partners.get();
+    }
 }
