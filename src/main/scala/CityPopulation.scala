@@ -11,9 +11,9 @@ import io.finch.syntax._
 
 object CityPopulation extends App {
 
-  private val inhabitant = get("inhabitant" :: path[String]) {
-    (id: String) =>
-      Ok(id)
+  private val inhabitant = get("inhabitant" :: path[String]) { id: String =>
+    val events = EventHandler.inhabitant(id)
+    Ok(s"$events");
   }
 
   private val city: Endpoint[String] = get("city") {

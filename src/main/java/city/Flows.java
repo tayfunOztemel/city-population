@@ -34,14 +34,15 @@ public class Flows {
             .to(Sink.foreach(AdulthoodHandler::sink));
 
     public final static Sink<String, NotUsed> partnerFlow = Flow.of(String.class)
-            .map(Partnership::toPartnership)
+            .map(Couple::toPartnership)
             .divertTo(Sinks.sinkPartnerEventToKafka, ifPartnersUnbornYet())
             .divertTo(Sinks.sinkPartnerEventToLog, ifPartnersDied())
             .divertTo(Sinks.sinkPartnerEventToKafka, ifPartnersNotAdultYet())
+            .divertTo(Sinks.sinkPartnerEventToLog, ifPartnersAlready())
             .to(Sink.foreach(PartnershipHandler::sink));
 
     public final static Sink<String, NotUsed> childrenFlow = Flow.of(String.class)
-            .map(Partnership::withChildren)
+            .map(Couple::withChildren)
             .divertTo(Sinks.sinkPartnerEventToKafka, ifPartnersUnbornYet())
             .divertTo(Sinks.sinkPartnerEventToLog, ifPartnersDied())
             .divertTo(Sinks.sinkPartnerEventToKafka, ifPartnersNotAdultYet())

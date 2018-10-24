@@ -14,7 +14,7 @@ public class Citizen {
         return new Citizen(rawMessage, name);
     }
 
-    static Citizen toCitizen(String rawMessage) {
+    public static Citizen toCitizen(String rawMessage) {
         String[] split = rawMessage.split("-");
         return new Citizen(rawMessage, split[1]);
     }

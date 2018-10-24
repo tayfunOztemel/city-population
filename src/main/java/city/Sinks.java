@@ -17,7 +17,7 @@ final class Sinks {
             .map(c -> CityEventProducer.toRecord(c.rawMessage))
             .to(Sink.fromGraph(CityEventProducer.getInstance().sink()));
 
-    static final Sink<Partnership, NotUsed> sinkPartnerEventToKafka = Flow.of(Partnership.class)
+    static final Sink<Couple, NotUsed> sinkPartnerEventToKafka = Flow.of(Couple.class)
             .map(p -> {
                 System.out.println("REQUEUED: " + p.rawMessage);
                 return p;
@@ -29,7 +29,7 @@ final class Sinks {
             .map(c -> c.rawMessage)
             .to(Sink.foreach(rawMessage -> System.out.println("DROPPED: " + rawMessage)));
 
-    static final Sink<Partnership, NotUsed> sinkPartnerEventToLog = Flow.of(Partnership.class)
+    static final Sink<Couple, NotUsed> sinkPartnerEventToLog = Flow.of(Couple.class)
             .map(p -> p.rawMessage)
             .to(Sink.foreach(rawMessage -> System.out.println("DROPPED: " + rawMessage)));
 
