@@ -30,11 +30,11 @@ public class CitizenEventMapTest {
 
     @Test
     public void contains() {
-        map.put(c1, new Event.Partner("Partner-1-2", "2"));
-        map.put(c2, new Event.Partner("Partner-1-2", "1"));
+        map.put(c1, new Event.Partner("Partner-1-2", c2));
+        map.put(c2, new Event.Partner("Partner-1-2", c1));
 
-        assertTrue(map.isCurrentPartner(c1, "2"));
-        assertTrue(map.isCurrentPartner(c2, "1"));
+        assertTrue(map.isCurrentPartner(c1, c2));
+        assertTrue(map.isCurrentPartner(c2, c1));
     }
 
     @Test
@@ -48,16 +48,16 @@ public class CitizenEventMapTest {
         final CitizenEventMap citizenEventMap = new CitizenEventMap();
         citizenEventMap.put(c, new Event.Birth());
         citizenEventMap.put(c, new Event.Adulthood());
-        citizenEventMap.put(c, new Event.Partner("Partner-2", "2"));
-        citizenEventMap.put(c, new Event.Partner("Partner-3", "3"));
+        citizenEventMap.put(c, new Event.Partner("Partner-2", c2));
+        citizenEventMap.put(c, new Event.Partner("Partner-3", c3));
         citizenEventMap.put(c, new Event.Education());
-        citizenEventMap.put(c, new Event.Partner("Partner-4", "4"));
+        citizenEventMap.put(c, new Event.Partner("Partner-4", c4));
         citizenEventMap.put(c, new Event.Education());
 
-        assertTrue(citizenEventMap.isCurrentPartner(c,"4"));
+        assertTrue(citizenEventMap.isCurrentPartner(c,c4));
 
-        citizenEventMap.put(c, new Event.Partner("Partner-5", "5"));
+        citizenEventMap.put(c, new Event.Partner("Partner-5", c2));
 
-        assertTrue(citizenEventMap.isCurrentPartner(c, "5"));
+        assertTrue(citizenEventMap.isCurrentPartner(c, c2));
     }
 }

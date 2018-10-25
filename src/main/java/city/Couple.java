@@ -13,11 +13,7 @@ public class Couple {
         c2 = Citizen.toCitizen(rawMessage, split[2]);
     }
 
-    static Couple toPartnership(String s) {
-        return new Couple(s);
-    }
-
-    static Couple withChildren(String s) {
+    static Couple toCouple(String s) {
         return new Couple(s);
     }
 

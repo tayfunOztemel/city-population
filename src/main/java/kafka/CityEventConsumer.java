@@ -17,18 +17,14 @@ public class CityEventConsumer {
 
     private final Source<ConsumerMessage.CommittableMessage<String, String>, Consumer.Control> cityPopulationSource;
 
-    private CityEventConsumer(ActorSystem system) {
-        cityPopulationSource = Consumer.committableSource(consumerSettings(system), getTopics());
-    }
-
     public static void initialize(ActorSystem system) {
         if (instance == null) {
             instance = new CityEventConsumer(system);
         }
     }
 
-    public static CityEventConsumer getInstance() {
-        return instance;
+    private CityEventConsumer(ActorSystem system) {
+        cityPopulationSource = Consumer.committableSource(consumerSettings(system), subscription());
     }
 
     private static ConsumerSettings<String, String> consumerSettings(ActorSystem system) {
@@ -37,21 +33,14 @@ public class CityEventConsumer {
                 .withBootstrapServers("localhost:9092")
                 .withGroupId("group1")
                 .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        /*
-         For using
-            Consumer.plainSource
-         and
-            Consumer.plainPartitionedManualOffsetSource
-         with an Offset Storage external to Kafka
-
-            settings.
-                .withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true")
-                .withProperty(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "5000");
-        */
     }
 
-    private AutoSubscription getTopics() {
+    private AutoSubscription subscription() {
         return Subscriptions.topics(KafkaTopic.CITY_POPULATION_TOPIC_NAME);
+    }
+
+    public static CityEventConsumer getInstance() {
+        return instance;
     }
 
     public Source<ConsumerMessage.CommittableMessage<String, String>, Consumer.Control> source() {

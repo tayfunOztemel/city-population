@@ -1,5 +1,7 @@
 package city.events;
 
+import city.Citizen;
+
 class Event {
 
     static final class Birth extends Event {
@@ -68,11 +70,15 @@ class Event {
 
     static final class Partner extends Event {
         private String rawEvent;
-        private String partner;
+        private Citizen partner;
 
-        public Partner(String s, String partner) {
+        Partner(String s, Citizen partner) {
             this.rawEvent = s;
             this.partner = partner;
+        }
+
+        Citizen getPartner() {
+            return partner;
         }
 
         public String toString() {
@@ -90,22 +96,18 @@ class Event {
             return rawEvent.hashCode();
         }
 
-        public String getPartner() {
-            return partner;
-        }
     }
 
     static final class Children extends Event {
         private String rawEvent;
 
-        public Children(String s) {
+        Children(String s) {
             this.rawEvent = s;
         }
 
         public String toString() {
             return rawEvent;
         }
-
 
         @Override
         public boolean equals(Object obj) {

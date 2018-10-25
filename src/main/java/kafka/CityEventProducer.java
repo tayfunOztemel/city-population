@@ -1,6 +1,6 @@
 package kafka;
 
-import akka.NotUsed;
+import akka.Done;
 import akka.actor.ActorSystem;
 import akka.kafka.ProducerSettings;
 import akka.kafka.javadsl.Producer;
@@ -10,11 +10,15 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.util.concurrent.CompletionStage;
+
+import static kafka.KafkaTopic.CITY_POPULATION_TOPIC_NAME;
+
 public class CityEventProducer {
 
     private static CityEventProducer instance;
 
-    private KafkaProducer kafkaProducer;
+    private KafkaProducer<String, String> kafkaProducer;
     private ProducerSettings<String, String> producerSettings;
 
     private CityEventProducer(ProducerSettings<String, String> settings) {
@@ -28,21 +32,21 @@ public class CityEventProducer {
         }
     }
 
-    public static CityEventProducer getInstance() {
-        return instance;
-    }
-
     private static ProducerSettings<String, String> createSettings(ActorSystem system) {
         final Config config = system.settings().config().getConfig("akka.kafka.producer");
         return ProducerSettings.create(config, new StringSerializer(), new StringSerializer())
                 .withBootstrapServers("localhost:9092");
     }
 
-    public static ProducerRecord<String, String> toRecord(String rawMessage) {
-        return new ProducerRecord<String, String>(KafkaTopic.CITY_POPULATION_TOPIC_NAME, rawMessage);
+    public static CityEventProducer getInstance() {
+        return instance;
     }
 
-    public Sink<ProducerRecord<String, String>, NotUsed> sink() {
+    public static ProducerRecord<String, String> toRecord(String rawMessage) {
+        return new ProducerRecord<>(CITY_POPULATION_TOPIC_NAME, rawMessage);
+    }
+
+    public Sink<ProducerRecord<String, String>, CompletionStage<Done>> sink() {
         return Producer.plainSink(producerSettings, kafkaProducer);
     }
 
